@@ -20,5 +20,15 @@ class Album(Base):
 
     AlbumId = Column(Integer, primary_key=True)
     Title = Column(String)
-    ArtistId = Column(Integer, ForeignKey('artists.Artistid'))
-    artist = relationship("Artists")
+    ArtistId = Column(Integer, ForeignKey('artists.Artistid')) # L'identifiant de l'artiste associé à l'album.
+    Artist = relationship("Artists")
+
+class Track(Base):
+    __tablename__ = "tracks"
+
+    TrackId = Column(Integer, primary_key=True)
+    Name = Column(String)
+    UnitPrice = Column(Integer)
+    Composer = Column(String)
+    AlbumId = Column(Integer, ForeignKey('albums.AlbumId'))
+    album = relationship("Album", primaryjoin=AlbumId == Album.AlbumId)  # L'identifiant de l'album auquel la piste est associée.
