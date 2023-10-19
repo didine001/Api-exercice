@@ -25,7 +25,7 @@ def read_genres(db: SessionLocal = Depends(get_db)):
     return genres
 
 
-@app.get("/artists/{name}")
+@app.get("/artists/{artist_name}")
 async def get_artists_by_name(artist_name: str, db: SessionLocal = Depends(get_db)):
     """
     Get a list of artists whose name contains the given string.
@@ -35,12 +35,14 @@ async def get_artists_by_name(artist_name: str, db: SessionLocal = Depends(get_d
         .filter(models.Artists.Name.like(f"%{artist_name}%"))
         .all()
     )
-    if artists:
+    if artists:  # If artist_name is found return the artist
         return artists
-    raise HTTPException(status_code=404, detail="Artists not found")
+    raise HTTPException(
+        status_code=404, detail="Artists not found"
+    )  # Else, we raise exception with status code 404
 
 
-@app.get("/albums/{id}")
+@app.get("/albums/{artist_id}")
 async def get_albums_by_artist_id(artist_id: int, db: SessionLocal = Depends(get_db)):
     """
     Get a list of albums for a given artist.
@@ -51,7 +53,7 @@ async def get_albums_by_artist_id(artist_id: int, db: SessionLocal = Depends(get
     raise HTTPException(status_code=404, detail="No artist found")
 
 
-@app.get("/tracks/{id}")
+@app.get("/tracks/{album_id}")
 async def get_track_name_by_album_id(album_id: int, db: SessionLocal = Depends(get_db)):
     """
     Get a list of titles for a given album.
@@ -61,7 +63,6 @@ async def get_track_name_by_album_id(album_id: int, db: SessionLocal = Depends(g
         return track
     raise HTTPException(status_code=404, detail="No album found")
 
-
 @app.get("/top_tracks/")
 async def get_top_tracks(db: SessionLocal = Depends(get_db)):
     """
@@ -70,7 +71,9 @@ async def get_top_tracks(db: SessionLocal = Depends(get_db)):
     top_tracks = (
         db.query(
             models.Track.Name,
-            func.count(models.Invoices.CustomerId).label("customer_count"),
+            func.count(models.Invoices.CustomerId).label(
+                "customer_count"
+            ),  # Count the number of customers
         )
         .join(
             models.Invoice_items, models.Invoice_items.TrackId == models.Track.TrackId
@@ -84,7 +87,8 @@ async def get_top_tracks(db: SessionLocal = Depends(get_db)):
         .all()
     )
     top_tracks_data = [
-        {"TrackName": name, "CustomerCount": count} for name, count in top_tracks
+        {"TrackName": name, "CustomerCount": count}
+        for name, count in top_tracks  # Formatting the objects
     ]
     if top_tracks:
         return top_tracks_data
