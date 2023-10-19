@@ -1,5 +1,4 @@
 from fastapi import FastAPI, HTTPException
-from sqlalchemy import func
 from .database import SessionLocal
 from fastapi import Depends
 from . import models
@@ -62,35 +61,3 @@ async def get_track_name_by_album_id(album_id: int, db: SessionLocal = Depends(g
     if track:
         return track
     raise HTTPException(status_code=404, detail="No album found")
-
-@app.get("/top_tracks/")
-async def get_top_tracks(db: SessionLocal = Depends(get_db)):
-    """
-    Get the top tracks based on the number of customers who have purchased them.
-    """
-    top_tracks = (
-        db.query(
-            models.Track.Name,
-            func.count(models.Invoices.CustomerId).label(
-                "customer_count"
-            ),  # Count the number of customers
-        )
-        .join(
-            models.Invoice_items, models.Invoice_items.TrackId == models.Track.TrackId
-        )
-        .join(
-            models.Invoices, models.Invoices.InvoiceId == models.Invoice_items.InvoiceId
-        )
-        .group_by(models.Track.Name)
-        .order_by(func.count(models.Invoices.CustomerId).desc())
-        .limit(3)
-        .all()
-    )
-    top_tracks_data = [
-        {"TrackName": name, "CustomerCount": count}
-        for name, count in top_tracks  # Formatting the objects
-    ]
-    if top_tracks:
-        return top_tracks_data
-    else:
-        raise HTTPException(status_code=404, detail="No top tracks found")
