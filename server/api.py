@@ -61,3 +61,39 @@ async def get_track_name_by_album_id(album_id: int, db: SessionLocal = Depends(g
     if track:
         return track
     raise HTTPException(status_code=404, detail="No album found")
+
+
+@app.delete("/artists/{artist_id}")
+async def delete_artist(artist_id: int, db: SessionLocal = Depends(get_db)):
+    """
+    Delete an artist by their ID.
+    """
+    artist = (
+        db.query(models.Artists).filter(models.Artists.Artistid == artist_id).first()
+    )
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+
+    db.delete(artist)
+    db.commit()
+
+    return {"Artist deleted successfully"}
+
+
+@app.put("/artists/{artist_id}")
+async def update_artist_name(
+    artist_id: int, name: str, db: SessionLocal = Depends(get_db)
+):
+    """
+    Update the name of an artist by their ID.
+    """
+    artist = db.query(models.Artists).filter(models.Artists.Artistid == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+
+    artist.Name = name
+
+    db.commit()
+    db.refresh(artist)
+
+    return artist
