@@ -80,6 +80,7 @@ def test_create_artist():
     response = client.post(f"/artists/?new_name={new_name}")
     assert response.status_code == 200
 
+
 def test_create_artist_invalid():
     new_name = "weekendes"
     response = client.post(f"/artists/?new_name={new_name}")

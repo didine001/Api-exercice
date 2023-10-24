@@ -102,17 +102,22 @@ async def update_artist_name(
 
     return artist
 
+
 @app.post("/artists/")
 async def create_artist(new_name: str, db: SessionLocal = Depends(get_db)):
     """
     Create a new artist with just a name.
     """
-    artist_already_exist = db.query(models.Artists).filter(models.Artists.Name == new_name).first()
+    artist_already_exist = (
+        db.query(models.Artists).filter(models.Artists.Name == new_name).first()
+    )
     if artist_already_exist:
         raise HTTPException(status_code=404, detail="Artist already exists")
 
-    new_artist = models.Artists(Name=new_name) # We create the new artist with name entered
-    db.add(new_artist) # Adding to db
-    db.commit() # Updating db
+    new_artist = models.Artists(
+        Name=new_name
+    )  # We create the new artist with name entered
+    db.add(new_artist)  # Adding to db
+    db.commit()  # Updating db
     db.refresh(new_artist)
     return new_artist
