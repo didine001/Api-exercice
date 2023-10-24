@@ -50,19 +50,19 @@ def test_get_album_by_artist_id_invalid():
 
 
 def test_delete_artist():
-    artist_id = "152"
+    artist_id = "258"
     response = client.delete(f"/artists/{artist_id}")
     assert response.status_code == 200
 
 
 def test_delete_artist_invalid():
-    artist_id = "5000"
+    artist_id = "5070"
     response = client.delete(f"/artists/{artist_id}")
     assert response.status_code == 404
 
 
 def test_update_artist_name():
-    artist_id = "50"
+    artist_id = "55"
     new_name = "The weeknd"
     response = client.put(f"/artists/{artist_id}?name={new_name}")
     assert response.status_code == 200
@@ -72,4 +72,15 @@ def test_update_artist_name_invalid():
     artist_id = "9999"
     new_name = "John"
     response = client.put(f"/artists/{artist_id}?name={new_name}")
+    assert response.status_code == 404
+
+
+def test_create_artist():
+    new_name = "the jones"
+    response = client.post(f"/artists/?new_name={new_name}")
+    assert response.status_code == 200
+
+def test_create_artist_invalid():
+    new_name = "weekendes"
+    response = client.post(f"/artists/?new_name={new_name}")
     assert response.status_code == 404

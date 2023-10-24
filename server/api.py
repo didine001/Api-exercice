@@ -69,13 +69,15 @@ async def delete_artist(artist_id: int, db: SessionLocal = Depends(get_db)):
     Delete an artist by their ID.
     """
     artist = (
-        db.query(models.Artists).filter(models.Artists.Artistid == artist_id).first()
+        db.query(models.Artists)
+        .filter(models.Artists.Artistid == artist_id)
+        .first()  # We test if the artist_id is in the db and matches the id sent by the user
     )
     if not artist:
         raise HTTPException(status_code=404, detail="Artist not found")
 
-    db.delete(artist)
-    db.commit()
+    db.delete(artist)  # We delete in the db the artist
+    db.commit()  # We update the db
 
     return {"Artist deleted successfully"}
 
@@ -87,13 +89,30 @@ async def update_artist_name(
     """
     Update the name of an artist by their ID.
     """
-    artist = db.query(models.Artists).filter(models.Artists.Artistid == artist_id).first()
+    artist = (
+        db.query(models.Artists).filter(models.Artists.Artistid == artist_id).first()
+    )  # We target a specific artist
     if not artist:
         raise HTTPException(status_code=404, detail="Artist not found")
 
-    artist.Name = name
+    artist.Name = name  # We change the old name by the new name sent by the user.
 
-    db.commit()
-    db.refresh(artist)
+    db.commit()  # We update the db.
+    db.refresh(artist)  # We refresh the object artist
 
     return artist
+
+@app.post("/artists/")
+async def create_artist(new_name: str, db: SessionLocal = Depends(get_db)):
+    """
+    Create a new artist with just a name.
+    """
+    artist_already_exist = db.query(models.Artists).filter(models.Artists.Name == new_name).first()
+    if artist_already_exist:
+        raise HTTPException(status_code=404, detail="Artist already exists")
+
+    new_artist = models.Artists(Name=new_name) # We create the new artist with name entered
+    db.add(new_artist) # Adding to db
+    db.commit() # Updating db
+    db.refresh(new_artist)
+    return new_artist
